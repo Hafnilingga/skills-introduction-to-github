@@ -1,0 +1,579 @@
+{% comment %}
+Copyright (C) 2008  Coupa Software Incorporated http://www.coupa.com
+
+For a guide on how to customize your PO, please visit
+https://success.coupa.com/Support/Help_Articles/Purchase_Orders/Customize_Your_Purchase_Order_with_Liquid.
+
+NOTE: CSS has to be inlined for most email clients to work.
+{% endcomment %}
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body style="font-size: 10pt; font-family: TAHOMA, arial, sans-serif;">
+  {% comment %} Email-specific styling is below. {% endcomment %} 
+  {% if email.note %}
+    <pre style="font-family: TAHOMA, arial, sans-serif; font-size: 10pt; width: 95%;">{{ email.note }}</pre>
+  {% endif %}
+
+  {% if email.supplier_attachments_link %}
+    <p>
+      {{ 'order_headers.po_default_liquid.attachments_info_html' | t_with_one_arg_html_safe: email.supplier_attachments_link }}
+    </p>
+  {% endif %}
+
+  {% if email.note or email.supplier_attachments_link %}
+    <hr/>
+  {% endif %}
+  
+  {% comment %} PO DATA STARTS FROM HERE {% endcomment %}
+  <table id="header" style="overflow: auto; width: 900;">
+    <tr>
+      <td id="logo_image" style="width: 380;">
+        {% if coa_logo_url %}
+          <img src="{{ coa_logo_url }}" alt="" width="120" />
+        {% else %}
+          {% if company_logo_url %}
+            <img src="{{ company_logo_url }}" alt="" width="120"  />
+          {% else %}
+            <img src="{{ coupa_logo_url }}" alt="" width="120"  />
+          {% endif %}
+        {% endif %}
+      </td>
+      <td style="width: 380;">
+        <h1 style="margin-top: 0;">{{ title }}</h1>
+      </td>
+    </tr>
+  </table>
+  <br>
+  <br>
+  <table style="overflow: auto; text-align: top; width: 970">
+    <tr>
+      <td id="supplier_info" valign="top" style="width: 440;">
+        <div style="font-weight: bold; font-size: 12pt;">{{ supplier.name }}</div>
+        {% if supplier.primary_address %}
+          <div>{{ supplier.primary_address.street1 }}</div>
+          {% if supplier.primary_address.street2 %}<div>{{ supplier.primary_address.street2 }}</div>{% endif %}
+          <div>{% if supplier.primary_address.city %} {{ supplier.primary_address.city }}, {% endif %} {{ supplier.primary_address.state }} {{ supplier.primary_address.postal_code }}</div>
+          {% if bill_to_address.country.name != supplier.primary_address.country.name and ship_to_address.country.name != supplier.primary_address.country.name %}
+            {% assign countries_are_different = true %}
+            <div>{{ supplier.primary_address.country.name }}</div>
+          {% else %}
+            {% assign countries_are_different = false %}
+          {% endif %}
+        {% endif %}
+         <div style="text-align: top; width: 420; word-wrap:break-word;">{{ supplier.po_email }}</div>
+        {% comment %}
+        {% if supplier.primary_contact %}
+          {% if supplier.primary_contact.fullname %}<div>{{ 'order_headers.po_default_liquid.attention' | t }}: {{ supplier.primary_contact.fullname }}</div>{% endif %}
+          {% if supplier.primary_contact.email %}<div>{{ supplier.primary_contact.email }}</div>{% endif %}
+          {% if supplier.primary_contact.phone_work %}<div>Phone: {{ supplier.primary_contact.phone_work }}</div>{% endif %}
+          {% if supplier.primary_contact.phone_fax %}<div>Fax: {{ supplier.primary_contact.phone_fax }}</div>{% endif %}
+        {% endif %}
+        {% endcomment %}
+      </td>
+      <td id="po_info"style="width: auto; ">
+        <table style="margin: 0px; padding-right:0px;">
+          <tr>
+            <td style="width: 140px; padding: 0; display: inline-block; font-size: 12pt; word-wrap: normal; vertical-align: top;" valign="top">
+              {{ 'order_headers.po_default_liquid.po_number' | t }}
+            </td>
+            <td style="width: 260px; font-weight: bold; padding-left: 10px; word-wrap: break-word; display: inline-block; font-size: 12pt; vertical-align: top;">
+              {{ purchase_order.po_number_with_version }}&nbsp;
+            </td>
+          </tr>
+        <tr>
+          <td style="width: 140px; padding: 0; display: inline-block; font-size: 12pt; word-wrap: break-word; vertical-align: top;">
+            {{ 'order_headers.po_default_liquid.date' | t }}
+          </td>
+          <td style="width: 260px; font-weight: bold; padding-left: 10px; word-wrap: break-word; display: inline-block; font-size: 12pt; vertical-align: top;">
+            {{ purchase_order.created_date | date: "%d-%b-%Y" }}&nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td style="width: 140px; padding: 0; display: inline-block; font-size: 12pt; word-wrap: break-word; vertical-align: top;">
+            {{ 'order_headers.po_default_liquid.payment_terms' | t }}
+          </td>
+          <td style="width: 260px; font-weight: bold; padding-left: 10px; word-wrap: break-word; display: inline-block; font-size: 12pt; vertical-align: top;">
+            {{ purchase_order.payment_term.code }}&nbsp;
+          </td>
+        </tr>
+	{% if purchase_order.shipping_term.code %}
+		<tr>
+          <td style="width: 140px; padding: 0; display: inline-block; font-size: 12pt; word-wrap: break-word; vertical-align: top;">
+            {{ 'order_headers.po_default_liquid.shipping_terms' | t }}
+          </td>
+          <td style="width: 260px; font-weight: bold; padding-left: 10px; word-wrap: break-word; display: inline-block; font-size: 12pt; vertical-align: top;">
+            {{ purchase_order.shipping_term.code }}&nbsp;
+          </td>
+        </tr>
+	{% endif %}        
+		{% comment %}<tr>
+          <td style="width: 140px; padding: 0; display: inline-block; font-size: 12pt; word-wrap: break-word; vertical-align: top;">
+            {{ 'order_headers.po_default_liquid.currency' | t }}
+          </td>
+          <td style="width: 260px; font-weight: bold; padding-left: 10px; word-wrap: break-word; display: inline-block; font-size: 12pt; vertical-align: top;">
+            {{ purchase_order.currency.code }}&nbsp;
+          </td>
+        </tr>- Alvin Magallanes{% endcomment %}
+        <tr>
+          <td style="width: 140px; padding: 0; display: inline-block; font-size: 12pt; word-wrap: break-word; vertical-align: top;">
+            {{ 'order_headers.po_default_liquid.contract' | t }}
+          </td>
+          <td style="width: 260px; font-weight: bold; padding-left: 10px; word-wrap: break-word; display: inline-block; font-size: 12pt; vertical-align: top;">
+            {{ purchase_order.contract.number }}&nbsp;
+          </td>
+        </tr>
+        <tr>
+          <td style="width: 140px; padding: 0; display: inline-block; font-size: 12pt; word-wrap: break-word; vertical-align: top;">
+            REQUESTOR
+          </td>
+          <td style="width: 260px; font-weight: bold; padding-left: 10px; word-wrap: break-word; display: inline-block; font-size: 12pt; vertical-align: top;">
+            {{ purchase_order.requester.fullname }}
+          </td>
+          {% comment %}
+          <td style="width: 260px; font-weight: bold; padding-left: 10px; word-wrap: break-word; display: inline-block; font-size: 12pt; vertical-align: top;">
+            {{ purchase_order.requester.fullname }}
+          </td> Requester is not displayed - Alvin Magallanes
+          {% endcomment %}
+        </tr>
+        <tr>
+          <td style="width: 140px; padding: 0; display: inline-block; font-size: 12pt; word-wrap: break-word; vertical-align: top;">
+            CURRENCY
+          </td>
+          <td style="width: 260px; font-weight: bold; padding-left: 10px; word-wrap: break-word; display: inline-block; font-size: 12pt; vertical-align: top;">
+            {{ purchase_order.currency.code }}
+          </td>
+        </tr>
+        <tr>
+          <td style="width: 140px; padding: 0; display: inline-block; font-size: 12pt; word-wrap: break-word; vertical-align: top;">
+           &nbsp;
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+
+  <table id="addresses" style="overflow: font-family: TAHOMA, arial, sans-serif; auto; width: 900; ">
+    <tr>
+    <td style="width: 400">
+      <fieldset style="border: 2px solid gray; padding: 0em 1em; width: 420; height:140;">
+        <legend style="font-weight: bold; font-size: 12pt;">{{ 'order_headers.po_default_liquid.ship_to' | t }}</legend>
+        {% comment %}{% if company_name %}<div><strong>{{ company_name }}</strong></div>{% endif %}{% endcomment %}
+        <div><strong>{{ ship_to_address.name }}</strong></div>
+        <div>{{ ship_to_address.street1 }}</div>
+        {% if ship_to_address.street2 %}<div>{{ ship_to_address.street2 }}</div>{% endif %}
+        <div>{% if ship_to_address.city %} {{ ship_to_address.city }}, {% endif %} {{ ship_to_address.state }} {{ ship_to_address.postal_code }}</div>
+        {% comment %} we don't want to display the country if all them are the same {% endcomment %}
+        {% if countries_are_different %}<div>{{ ship_to_address.country.name }},{% endif %}
+        {% if ship_to_address.location_code %}{{ ship_to_address.location_code }}</div>{% endif %}
+      </fieldset>
+    </td>
+    <td style="width: 400">
+      <fieldset style="border: 2px solid gray; padding: 0em 1em; width: 420; height:140;">
+        <legend style="font-weight: bold; font-size: 12pt;">{{ 'order_headers.po_default_liquid.bill_to' | t }}</legend>
+        {% if purchase_order.pcard %}
+          <div>{{ 'order_headers.po_default_liquid.card.p_card' | t }}</div>
+          <div><label>{{ 'order_headers.po_default_liquid.card.name' | t }}:</label> {{ purchase_order.pcard.name }} </div>
+          {% if unmask_pcard_number %}
+            <div><label>{{ 'order_headers.po_default_liquid.card.number' | t }}:</label> {{ purchase_order.pcard.formatted_unmasked_number }} </div>
+          {% else %}
+            <div><label>{{ 'order_headers.po_default_liquid.card.number' | t }}:</label> {{ purchase_order.pcard.number }} </div>
+          {% endif %}
+          <div><label>{{ 'order_headers.po_default_liquid.card.exp' | t }}:</label> {{ purchase_order.pcard.expiry }} </div>
+        {% else %}
+          {% if company_name %}<div><strong>{{ company_name }}</strong></div>{% endif %}
+          <div>{{ bill_to_address.street1 }}</div>
+          {% if bill_to_address.street2 %}<div>{{ bill_to_address.street2 }}</div>{% endif %}
+          <div>{% if bill_to_address.city %} {{ bill_to_address.city }}, {% endif %} {{ bill_to_address.state }} {{ bill_to_address.postal_code }}</div>
+          {% comment %} we don't want to display the country if all them are the same, but supplier address should be ignored if it's blank {% endcomment %}
+          {% if countries_are_different %}<div>{{ bill_to_address.country.name }}</div>{% endif %}
+          {% if bill_to_address.location_code %}<div>{{ bill_to_address.location_code }}</div>{% endif %}
+          <div>{{ 'order_headers.po_default_liquid.attention' | t }}: {{ purchase_order.bill_to_name }}</div>
+          {% if supplier.account_number %}<div>{{ 'order_headers.po_default_liquid.account' | t }}: #{{ supplier.account_number }}</div>{% endif %}
+        {% endif %}
+      </fieldset>
+    </td>
+  </tr>
+  </table>  
+
+	<br>
+  <br>
+  <br>
+
+  <table id="purchase_order_attachments" style="width: 970;">
+    <tr>
+    <td>
+    <ul style="text-indent: -2em; list-style: none; padding-left: 2em; margin-left: 0; width: 970;">
+      {% for attachment in purchase_order.attachments %}
+        {% case attachment.type %}
+        {% when 'text' %}<li>{{ 'order_headers.po_default_liquid.note' | t }}: {{ attachment.text }}</li>
+        {% when 'url' %}<li><a href="{{ attachment.url }}">{{ attachment.url }}</a></li>
+        {% endcase %}
+      {% endfor %}
+    </ul>
+    </td>
+    </tr>
+  </table>
+
+  {% if purchase_order.last_deleted_lines != empty or purchase_order.last_changed_lines != empty or purchase_order.last_added_lines != empty %}
+    <h3 style="margin-top: 2em; margin-bottom: 0.5em">{{ 'order_headers.po_default_liquid.current_lines' | t }}</h3>
+  {% endif %}
+
+  <table id="order_lines" style="font-size: 11pt; border-color: black; border-collapse: collapse; font-family: TAHOMA, arial, sans-serif; border-width: 2px 0 1px 0; border-style: solid; width: 920;">
+    <thead>
+      <th style="font-weight: bold; border-bottom: 3px solid black;">{{ 'order_headers.po_default_liquid.line' | t }}</th>
+      <th style="font-weight: bold; border-bottom: 3px solid black;">{{ 'order_headers.po_default_liquid.description' | t }}</th>
+      <th style="font-weight: bold; border-bottom: 3px solid black;">{{ 'order_headers.po_default_liquid.need_by_date' | t }}</th>
+      <th style="font-weight: bold; border-bottom: 3px solid black;">{{ 'order_headers.po_default_liquid.quantity' | t }}</th>
+      <th style="font-weight: bold; border-bottom: 3px solid black;">{{ 'order_headers.po_default_liquid.unit' | t }}</th>
+      {% unless purchase_order.price_is_hidden_from_supplier? %}
+        <th style="font-weight: bold; border-bottom: 3px solid black;">{{ 'order_headers.po_default_liquid.price' | t }}</th>
+        {% if purchase_order.order_lines_has_bulk_price? %}
+          <th style="font-weight: bold; border-bottom: 3px solid black;">{{ 'order_headers.po_default_liquid.bulk_price' | t }}</th>
+        {% endif %}
+        <th style="font-weight: bold; border-bottom: 3px solid black;">{{ 'order_headers.po_default_liquid.total' | t }}</th>
+      {% endunless %}
+    </thead>
+    {% for line in lines %}
+      <tr>
+        <td style="text-align: center; vertical-align: top; width: 20;">{{ line.line_num }}</td>
+        <td style="text-align: left; vertical-align: top; width: 380;">
+          {{ line.description }}
+          {% if line.supplier_part_number %}
+            <div style="overflow: auto; width: 95%;">
+              <div style="text-indent: 1em; float: left;">{{line.supplier_part_number }}</div>
+            </div>
+          {% endif %}
+          {% if line.asset_tags.size > 0 %}
+              <div style="clear: left; margin: 0; padding-top: 3px; padding-left: 10em;">
+                <label style="margin-left: -9em; width: 9em; float: left;">Asset Tags</label>
+                {{ line.asset_tags | join: ", " }}
+              </div>
+          {% endif %}
+          {% if line.form_response %}
+            {% for fr in line.form_response %}
+              <div style="clear: left; margin: 0; padding-top: 3px; height: 1%; padding-left: 10em; vertical-align: middle;">
+                <label style="margin-left: -9em; width: 9em; float: left;">{{ fr.question }}</label>{{ fr.answer }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          {% if line.rfq_form_response %}
+            {% for fr in line.rfq_form_response %}
+              <div style="clear: left; margin: 0; padding-top: 3px; height: 1%; padding-left: 10em; vertical-align: middle;">
+                <label style="margin-left: -9em; width: 9em; float: left;">{{ fr.question }}</label>{{ fr.answer }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          <ul style="text-indent: -2em; list-style: none; padding-left: 2em; margin-left: 1em;">
+            {% for attachment in line.attachments %}
+              {% case attachment.type %}
+              {% when 'text' %}<li>Note: {{ attachment.text }}</li>
+              {% when 'url' %}<li><a href="{{ attachment.url }}">{{ attachment.url }}</a></li>
+              {% endcase %}
+            {% endfor %}
+          </ul>
+        </td>
+        <td style="text-align: center; vertical-align: top;">{{ line.need_by_date | date: "%d-%b-%y" }}</td>
+        <td style="text-align: center; vertical-align: top;">{{ line.quantity | n }}</td>
+        <td style="text-align: center; vertical-align: top;">{{ line.uom.name }}</td>
+        {% unless purchase_order.price_is_hidden_from_supplier? %}
+          <td style="text-align: right; vertical-align: top; width: 115;" >{{ line.price }}</td>
+          {% if purchase_order.order_lines_has_bulk_price? %}
+            <td style="text-align: center; vertical-align: top; width: 115;"><div style="margin-bottom:5px;">{{ line.bulk_price_with_currency }}</div>
+              {% if line.uom != line.bulk_price_uom %}
+                <div style="margin-bottom:5px;font-size:11px;color:grey;">{{ line.display_conversion_ratio }}</div>
+              {% endif %}
+            </td>
+          {% endif %}
+          <td style="text-align: right; vertical-align: top; width: 120;">{{ line.total }}</td>
+        {% endunless %}
+      </tr>
+    {% endfor %}
+  </table>
+
+  <table id="purchase_order_total" style="width: 920; text-align: right;">
+    <tr>
+    <td>
+    {% unless purchase_order.price_is_hidden_from_supplier? %}
+      <div style="padding-left: 3em; display: inline;">
+        {% if purchase_order.total_changed? %}
+          <span style="text-decoration:line-through">{{ purchase_order.total_old }} {% comment %}{{ purchase_order.currency_old.code }}{% endcomment %}</span><br/>
+        {% endif %}
+        <b style="font-weight: bold; font-size: 12pt;">{{ purchase_order.total }}</b> {% comment %}{{ purchase_order.currency.code }}{% endcomment %}
+      </div>
+    {% endunless %}
+    </td>
+    </tr>
+  </table>
+
+  {% if purchase_order.last_deleted_lines != empty %}
+    <h3 style="margin-top:2em; margin-bottom:0.5em">{{ 'order_headers.po_default_liquid.deleted_lines' | t }}</h3>
+    <table id="deleted_order_lines" style="font-size: 10pt; border-color: black; border-collapse: collapse; font-family: TAHOMA, arial, sans-serif; border-width: 2px 0 1px 0; border-style: solid; width: 90%;">
+      <thead>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.line' | t }}</th>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.description' | t }}</th>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.quantity' | t }}</th>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.unit' | t }}</th>
+        {% unless purchase_order.price_is_hidden_from_supplier? %}
+          <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.price' | t }}</th>
+          {% if purchase_order.last_deleted_lines_has_bulk_price? %}
+            <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.bulk_price' | t }}</th>
+          {% endif %}
+          <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.total' | t }}</th>
+        {% endunless %}
+      </thead>
+
+      {% for line in purchase_order.last_deleted_lines %}
+        <tr>
+          <td style="text-align: center; vertical-align: top; width: 20;">{{ line.line_num }}</td>
+          <td style="text-align: left; vertical-align: top; width: 350;">
+            {{ line.description }}
+            {% if line.supplier_part_number %}
+              <div style="overflow: auto; width: 95%;">
+                <div style="text-indent: 1em; float: left;">{{line.supplier_part_number }}</div>
+              </div>
+            {% endif %}
+            {% if line.asset_tags.size > 0 %}
+                <div style="clear: left; margin: 0; padding-top: 3px; padding-left: 10em;">
+                  <label style="margin-left: -9em; width: 9em; float: left;">{{ 'order_headers.po_default_liquid.asset_tags' | t }}</label>
+                  {{ line.asset_tags | join: ", " }}
+                </div>
+            {% endif %}
+          </td>
+          <td style="text-align: center; vertical-align: top; width: 30;">{{ line.quantity | n }}</td>
+          <td style="text-align: center; vertical-align: top; width: 30;">{{ line.uom.name }}</td>
+          {% unless purchase_order.price_is_hidden_from_supplier? %}
+            <td style="text-align: center; vertical-align: top;">{{ line.price }}</td>
+            {% if purchase_order.last_deleted_lines_has_bulk_price? %}
+              <td style="text-align: center; vertical-align: top;width: 30;"><div style="margin-bottom:5px;">{{ line.bulk_price_with_currency }}</div>
+                {% if line.uom != line.bulk_price_uom %}
+                  <div style="margin-bottom:5px;font-size:11px;color:grey;">{{ line.display_conversion_ratio }}</div>
+                {% endif %}
+              </td>
+            {% endif %}
+            <td style="text-align: center; vertical-align: top;">{{ line.total }}</td>
+          {% endunless %}
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+
+  {% if purchase_order.last_changed_lines != empty %}
+    <h3 style="margin-top:2em; margin-bottom:0.5em">{{ 'order_headers.po_default_liquid.changed_lines' | t }}</h3>
+    <table id="changed_order_lines" style="font-size: 10pt; border-color: black; border-collapse: collapse; font-family: TAHOMA, arial, sans-serif; border-width: 2px 0 1px 0; border-style: solid; width: 90%;">
+      <thead>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.line' | t }}</th>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.description' | t }}</th>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.quantity' | t }}</th>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.unit' | t }}</th>
+        {% unless purchase_order.price_is_hidden_from_supplier? %}
+          <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.price' | t }}</th>
+          {% if purchase_order.last_changed_lines_has_bulk_price? %}
+            <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.bulk_price' | t }}</th>
+          {% endif %}
+          <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.total' | t }}</th>
+        {% endunless %}
+      </thead>
+
+      {% for line in purchase_order.last_changed_lines %}
+        <tr>
+          <td style="text-align: center; vertical-align: middle; width: 20;">{{ line.line_num }}</td>
+          <td style="text-align: left; vertical-align: middle; width: 350;">
+            {% if line.description_changed? %}
+              <span style="text-decoration:line-through">{{ line.description_old }}</span><br/>
+              {{ line.description }}
+            {% else %}
+              {{ line.description }}
+            {% endif %}
+            {% if line.supplier_part_number %}
+              <div style="overflow: auto; width: 95%;">
+                <div style="text-indent: 1em; float: left;">
+                {% if line.supplier_part_number_changed? %}
+                  <span style="text-decoration:line-through">{{ line.supplier_part_number_old }}</span><br/>
+                  {{ line.supplier_part_number }}
+                {% else %}
+                  {{ line.supplier_part_number }}
+                {% endif %}
+                </div>
+              </div>
+            {% endif %}
+            {% if line.asset_tags.size > 0 %}
+                <div style="clear: left; margin: 0; padding-top: 3px; padding-left: 10em;">
+                <label style="margin-left: -9em; width: 9em; float: left;">{{ 'order_headers.po_default_liquid.asset_tags' | t }}</label>
+                  {{ line.asset_tags | join: ", " }}
+                </div>
+            {% endif %}
+          </td>
+          <td style="text-align: center; vertical-align: middle; width: 30;">
+            {% if line.quantity_changed? %}
+              <span style="text-decoration:line-through">{{ line.quantity_old | n }}</span><br/>
+              {{ line.quantity | n }}
+            {% else %}
+              {{ line.quantity | n }}
+            {% endif %}
+          </td>
+          <td style="text-align: center; vertical-align: middle; width: 30;">
+            {% if line.uom_changed? %}
+              <span style="text-decoration:line-through">{{ line.uom_old.name }}</span><br/>
+              {{ line.uom.name }}
+            {% else %}
+              {{ line.uom.name }}
+            {% endif %}
+          </td>
+          {% unless purchase_order.price_is_hidden_from_supplier? %}
+            <td style="text-align: center; vertical-align: middle; width: 30;">
+              {% if line.price_changed? %}
+                <span style="text-decoration:line-through">{{ line.price_old }}</span><br/>
+                {{ line.price }}
+              {% else %}
+                {{ line.price }}
+              {% endif %}
+            </td>
+            {% if purchase_order.last_changed_lines_has_bulk_price? %}
+              <td style="text-align: center; vertical-align: middle;top; width: 30;">
+                {% if (line.bulk_price_with_currency_changed? || line.display_conversion_ratio_changed?) %}
+                  <div>
+                    <span style="text-decoration:line-through">
+                      <div style="margin-bottom:5px;">{{ line.bulk_price_with_currency_old }}</div>
+                      {% if line.uom_old != line.bulk_price_uom_old %}
+                        <div style="margin-bottom:5px;font-size:11px;color:grey;">{{ line.display_conversion_ratio_old }}</div>
+                      {% endif %}
+                    </span>
+                  </div><br/>
+                  <div>{{ line.bulk_price_with_currency }}</div>
+                  {% if line.uom != line.bulk_price_uom %}
+                    <div style="margin-top:5px;margin-bottom:5px;font-size:11px;color:grey;">{{ line.display_conversion_ratio }}</div>
+                  {% endif %}
+                {% else %}
+                  <div style="margin-bottom:5px;">{{ line.bulk_price_with_currency }}</div>
+                  {% if line.uom != line.bulk_price_uom %}
+                    <div style="margin-bottom:5px;font-size:11px;color:grey;">{{ line.display_conversion_ratio }}</div>
+                  {% endif %}
+                {% endif %}
+               </td>
+            {% endif %}
+            <td style="text-align: center; vertical-align: middle;">
+              {% if line.total_changed? %}
+                <span style="text-decoration:line-through">{{ line.total_old }}</span><br/>
+                {{ line.total }}
+              {% else %}
+                {{ line.total }}
+              {% endif %}
+            </td>
+          {% endunless %}
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+  <br>
+  <br>
+  <table style="border-collapse:collapse;border:none;">
+    <tbody>
+        <tr>
+            <td style="width: 141.5pt;padding: 0cm 5.4pt;vertical-align: top;">
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><strong><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>Created By:</span></strong></p>
+            </td>
+            <td style="width: 5cm;padding: 0cm 5.4pt;vertical-align: top;">
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><strong><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>Approved By:</span></strong></p>
+            </td>
+            <td style="width: 350.1pt;padding: 0cm 5.4pt;vertical-align: top;">
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><strong><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Noted:</span></strong></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 141.5pt;padding: 0cm 5.4pt;vertical-align: top;">
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>&nbsp;</span></p>
+            </td>
+            <td style="width: 5cm;padding: 0cm 5.4pt;vertical-align: top;">
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>&nbsp;</span></p>
+            </td>
+            <td style="width: 350.1pt;padding: 0cm 5.4pt;vertical-align: top;">
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>&nbsp;</span></p>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 141.5pt;padding: 0cm 5.4pt;vertical-align: top;">
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>&nbsp;</span></p>
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>&nbsp;</span></p>
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>{{ purchase_order.custom_po_creator }}</span></p>
+            </td>
+            <td style="width: 5cm;padding: 0cm 5.4pt;vertical-align: top;">
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>&nbsp;</span></p>
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>&nbsp;</span></p>
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>{{ purchase_order.custom_po_approver }}</span></p>
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:0cm;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><br></p>
+            </td>
+            <td style="width: 350.1pt;padding: 0cm 5.4pt;vertical-align: top;">
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:18.0pt;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>1.&nbsp;</span><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>This PO is computer generated and valid without signature</span></p>
+                <p style='margin-top:0cm;margin-right:0cm;margin-bottom:0cm;margin-left:18.0pt;line-height:normal;font-size:15px;font-family:"Calibri",sans-serif;'><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>2.&nbsp;</span><span style='font-size:12px;font-family:  "Tahoma",sans-serif;'></span><span style='font-size:12px;font-family:"Tahoma",sans-serif;'>PO number must appear on all Invoices, Delivery Receipts/Packing Lists. Please issue invoice(s) addressed to PT DARYA-VARIA LABORATORIA Tbk</span></p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+  {% if purchase_order.last_added_lines != empty %}
+    <h3 style="margin-top:2em; margin-bottom:0.5em">{{ 'order_headers.po_default_liquid.added_lines' | t }}</h3>
+    <table id="added_order_lines" style="font-size: 10pt; border-color: black; border-collapse: collapse; font-family: TAHOMA, arial, sans-serif; border-width: 2px 0 1px 0; border-style: solid; width: 90%;">
+      <thead>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.line' | t }}</th>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.description' | t }}</th>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.quantity' | t }}</th>
+        <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.unit' | t }}</th>
+        {% unless purchase_order.price_is_hidden_from_supplier? %}
+          <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.price' | t }}</th>
+          {% if purchase_order.last_added_lines_has_bulk_price? %}
+            <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.bulk_price' | t }}</th>
+          {% endif %}
+          <th style="font-weight: bold; border-bottom: 2px solid black;">{{ 'order_headers.po_default_liquid.total' | t }}</th>
+        {% endunless %}
+      </thead>
+
+      {% for line in purchase_order.last_added_lines %}
+        <tr>
+          <td style="text-align: center; vertical-align: top; width: 20;">{{ line.line_num }}</td>
+          <td style="text-align: left; vertical-align: top; width: 350;">
+            {{ line.description }}
+            {% if line.supplier_part_number %}
+              <div style="overflow: auto; width: 95%;">
+                <div style="text-indent: 1em; float: left;">{{line.supplier_part_number }}</div>
+              </div>
+            {% endif %}
+            {% if line.asset_tags.size > 0 %}
+                <div style="clear: left; margin: 0; padding-top: 3px; padding-left: 10em;">
+                <label style="margin-left: -9em; width: 9em; float: left;">{{ 'order_headers.po_default_liquid.asset_tags' | t }}</label>
+                  {{ line.asset_tags | join: ", " }}
+                </div>
+            {% endif %}
+          </td>
+          <td style="text-align: center; vertical-align: top; width: 30;">{{ line.quantity | n }}</td>
+          <td style="text-align: center; vertical-align: top; width: 30;">{{ line.uom.name }}</td>
+          {% unless purchase_order.price_is_hidden_from_supplier? %}
+            <td style="text-align: center; vertical-align: top; width: 30;">{{ line.price }}</td>
+            {% if purchase_order.last_added_lines_has_bulk_price? %}
+              <td style="text-align: center; vertical-align:top; width: 30;"><div style="margin-bottom:5px;">{{ line.bulk_price_with_currency }}</div>
+                {% if line.uom != line.bulk_price_uom %}
+                  <div style="margin-bottom:5px;font-size:11px;color:grey;">{{ line.display_conversion_ratio }}</div>
+                {% endif %}
+              </td>
+            {% endif %}
+            <td style="text-align: center; vertical-align: top;">{{ line.total }}</td>
+          {% endunless %}
+        </tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+  
+  <div id="purchase_order_boiler_plate" style="bottom: 0; font-size: 8pt; margin-top: 4em; width: 920;">{{ purchase_order.boiler_plate }}</div>
+
+  {% comment %} PO DATA END HERE {% endcomment %}
+
+  {% comment %} This lets the supplier flip the PO to an invoice{% endcomment %}
+  {% if email.create_invoice_link %}
+    <p>
+      {{ 'order_headers.po_default_liquid.create_invoice_info_html' | t_with_one_arg_html_safe: email.create_invoice_link }}
+    </p>
+  {% endif %}
+
+</body>
+</html>
